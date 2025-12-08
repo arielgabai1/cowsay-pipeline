@@ -56,7 +56,7 @@ pipeline {
                             sudo docker-compose down || true
                             sudo docker-compose pull
                             sudo docker-compose up -d --remove-orphans
-                            sudo docker system prune -a -f
+                             docker system prune -a -f
                         '
                     """
                 }
