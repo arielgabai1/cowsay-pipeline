@@ -48,9 +48,9 @@ pipeline {
         stage('Deploy to EC2') {
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: SSH_CRED_ID, keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
-                    sh "scp -o StrictHostKeyChecking=no -i $SSH_KEY docker-compose.yml ${SSH_USER}@${env.DEPLOY_SERVER_IP}:/home/${SSH_USER}/docker-compose.yml"
+                    sh "scp -o StrictHostKeyChecking=no -i \$SSH_KEY docker-compose.yml ${SSH_USER}@${env.DEPLOY_SERVER_IP}:/home/${SSH_USER}/docker-compose.yml"
                     sh """
-                        ssh -o StrictHostKeyChecking=no -i $SSH_KEY ${SSH_USER}@${env.DEPLOY_SERVER_IP} '
+                        ssh -o StrictHostKeyChecking=no -i \$SSH_KEY ${SSH_USER}@${env.DEPLOY_SERVER_IP} '
                             aws ecr get-login-password --region ${env.AWS_REGION} | sudo docker login --username AWS --password-stdin ${ECR_REGISTRY}
                             echo "ECR_IMAGE=${IMAGE}" > .env
                             sudo docker-compose down || true
