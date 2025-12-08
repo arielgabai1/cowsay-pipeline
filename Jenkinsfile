@@ -79,4 +79,4 @@ pipeline {
             sh "docker rmi ${ECR_REGISTRY}/${REPO_NAME}:v-${BUILD_NUMBER} || true"
         }
     }
-}
+    }
