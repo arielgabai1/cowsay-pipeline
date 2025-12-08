@@ -31,13 +31,13 @@ pipeline {
         stage('Sanity Test') {
             steps {
                 script {
-                    sh "docker rm -f sanity-test || true"
-                    sh "docker run -d --name sanity-test ${ECR_REGISTRY}/${REPO_NAME}:v-${BUILD_NUMBER}"
+                    sh "docker rm -f sanity-test-container || true"
+                    sh "docker run -d --name sanity-test-container ${ECR_REGISTRY}/${REPO_NAME}:v-${BUILD_NUMBER}"
                     sh "sleep 15"
                     try {
-                        sh "docker exec sanity-test node -e 'require(\"http\").get(\"http://127.0.0.1:8080\", (res) => res.pipe(process.stdout))'"
+                        sh "docker exec sanity-test-container node -e 'require(\"http\").get(\"http://127.0.0.1:8080\", (res) => res.pipe(process.stdout))'"
                     } finally {
-                        sh "docker rm -f sanity-test"
+                        sh "docker rm -f sanity-test-container"
                     }
                 }
             }
@@ -52,13 +52,13 @@ pipeline {
             }
         }
 
-    stage('Deploy to EC2') {
+        stage('Deploy to EC2') {
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: SSH_CRED_ID, keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
                     script {
                         def sshOptions = "-o StrictHostKeyChecking=no -i $SSH_KEY"
                         
-                        sh "scp ${sshOptions} docker-compose.yaml ${SSH_USER}@${env.DEPLOY_SERVER_IP}:/home/${SSH_USER}/docker-compose.yaml"
+                        sh "scp ${sshOptions} docker-compose.yml ${SSH_USER}@${env.DEPLOY_SERVER_IP}:/home/${SSH_USER}/docker-compose.yml"
                         
                         sh """
                         ssh ${sshOptions} ${SSH_USER}@${env.DEPLOY_SERVER_IP} '
@@ -73,10 +73,11 @@ pipeline {
                 }
             }
         }
+    }
     
     post {
         always {
             sh "docker rmi ${ECR_REGISTRY}/${REPO_NAME}:v-${BUILD_NUMBER} || true"
         }
     }
-    }
+}
