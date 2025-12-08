@@ -26,14 +26,14 @@ pipeline {
 
         stage('Sanity Test') {
             steps {
-                sh "docker rm -f sanity-test-container || true"
-                sh "docker run -d --name sanity-test-container ${IMAGE}"
-                sh "sleep 15"
-                sh "docker exec sanity-test-container node -e 'require(\"http\").get(\"http://127.0.0.1:8080\", (res) => res.pipe(process.stdout))'"
+                sh "docker rm -f sanity-test || true"
+                sh "docker run -d --name sanity-test ${IMAGE}"
+                sh "sleep 5"
+                sh "docker exec sanity-test curl -f http://127.0.0.1:8080"
             }
             post {
                 always {
-                    sh "docker rm -f sanity-test-container || true"
+                    sh "docker rm -f sanity-test || true"
                 }
             }
         }

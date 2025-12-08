@@ -1,5 +1,7 @@
 FROM node:8.11-alpine
 
+RUN apk add --no-cache curl
+
 RUN mkdir -p /app/code
 WORKDIR /app/code
 EXPOSE 8080
