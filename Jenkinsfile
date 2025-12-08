@@ -69,5 +69,29 @@ pipeline {
             sh "docker rmi ${IMAGE} || true"
             sh "docker system prune -f || true"
         }
+        success {
+            script {
+                def authorEmail = sh(returnStdout: true, script: "git show -s --format='%ae'").trim()
+                mail to: authorEmail,
+                     subject: "Build Success: ${env.JOB_NAME} [${env.BUILD_NUMBER}]",
+                     body: "Build successful. Check console: ${env.BUILD_URL}"
+                 
+                slackSend color: 'good', 
+                          channel: '#ariel-jenkins',
+                          message: "Build Success: ${env.JOB_NAME} [${env.BUILD_NUMBER}] by ${authorEmail} (<${env.BUILD_URL}|Open>)"
+            }
+        }
+        failure {
+            script {
+                def authorEmail = sh(returnStdout: true, script: "git show -s --format='%ae'").trim()
+                mail to: authorEmail,
+                     subject: "Build Failed: ${env.JOB_NAME} [${env.BUILD_NUMBER}]",
+                     body: "Build failed. Check console: ${env.BUILD_URL}"
+
+                slackSend color: 'danger', 
+                          channel: '#ariel-jenkins',
+                          message: "Build Failed: ${env.JOB_NAME} [${env.BUILD_NUMBER}] by ${authorEmail} (<${env.BUILD_URL}|Open>)"
+            }
+        }
     }
 }
