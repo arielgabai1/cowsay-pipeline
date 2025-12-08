@@ -55,7 +55,8 @@ pipeline {
                             echo "ECR_IMAGE=${IMAGE}" > .env
                             sudo docker-compose down || true
                             sudo docker-compose pull
-                            sudo docker-compose up -d
+                            sudo docker-compose up -d --remove-orphans
+                            sudo docker system prune -f
                         '
                     """
                 }
@@ -66,6 +67,7 @@ pipeline {
     post {
         always {
             sh "docker rmi ${IMAGE} || true"
+            sh "docker system prune -f || true"
         }
     }
 }
