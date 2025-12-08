@@ -31,8 +31,7 @@ pipeline {
         stage('Sanity Test') {
             steps {
                 script {
-                    sh "docker run --rm ${ECR_REGISTRY}/${REPO_NAME}:v-${BUILD_NUMBER} /usr/games/cowsay 'Sanity Check Passed'"
-                }
+                    sh "docker run --rm --entrypoint='' ${ECR_REGISTRY}/${REPO_NAME}:v-${BUILD_NUMBER} /usr/games/cowsay 'Sanity Check Passed'"                }
             }
         }
 
