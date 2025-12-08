@@ -31,9 +31,9 @@ pipeline {
        stage('Sanity Test') {
             steps {
                 script {
-                    echo "Starting container for functional testing..."
+                    echo "Starting container for sanity testing..."
                     sh "docker run -d --name sanity-test-container ${ECR_REGISTRY}/${REPO_NAME}:v-${BUILD_NUMBER}"
-                    sh "sleep 5"
+                    sh "sleep 20"
                     try {
                         echo "Running Curl..."
                         sh "curl -f http://\$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' sanity-test-container):8080"
