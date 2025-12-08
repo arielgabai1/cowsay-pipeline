@@ -31,11 +31,13 @@ pipeline {
        stage('Sanity Test') {
             steps {
                 script {
-                    sh "docker run -d --name sanity-test-container ${ECR_REGISTRY}/${REPO_NAME}:v-${BUILD_NUMBER}"
+                    echo "Running simplified Sanity Test..."
+                    sh "docker rm -f sanity-test || true"
+                    sh "docker run -d -p 8080:8080 --name sanity-test ${ECR_REGISTRY}/${REPO_NAME}:v-${BUILD_NUMBER}"
                     sh "sleep 15"
                     try {
-                        def containerIp = sh(script: "docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' sanity-test-container", returnStdout: true).trim()
-                        sh "curl -v --max-time 10 http://${containerIp}:8080 || (docker logs sanity-test-container && exit 1)"
+                        echo "Checking application..."
+                        sh "curl -f http://localhost:8080"
                     } finally {
                         sh "docker rm -f sanity-test-container"
                     }
