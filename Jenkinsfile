@@ -58,7 +58,7 @@ pipeline {
                     script {
                         def sshOptions = "-o StrictHostKeyChecking=no -i $SSH_KEY"
                         
-                        sh "scp ${sshOptions} docker-compose.yaml ${SSH_USER}@${env.DEPLOY_SERVER_IP}:/home/${SSH_USER}/docker-compose.yaml"
+                        sh "scp ${sshOptions} docker-compose.yml ${SSH_USER}@${env.DEPLOY_SERVER_IP}:/home/${SSH_USER}/docker-compose.yaml"
                         
                         sh """
                         ssh ${sshOptions} ${SSH_USER}@${env.DEPLOY_SERVER_IP} '
