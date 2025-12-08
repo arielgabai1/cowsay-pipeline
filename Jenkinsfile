@@ -33,13 +33,13 @@ pipeline {
                 script {
                     echo "Running simplified Sanity Test..."
                     sh "docker rm -f sanity-test || true"
-                    sh "docker run -d -p 8080:8080 --name sanity-test ${ECR_REGISTRY}/${REPO_NAME}:v-${BUILD_NUMBER}"
+                    sh "docker run -d -p 8081:8080 --name sanity-test ${ECR_REGISTRY}/${REPO_NAME}:v-${BUILD_NUMBER}"
                     sh "sleep 15"
                     try {
                         echo "Checking application..."
-                        sh "curl -f http://localhost:8080"
+                        sh "curl -f http://localhost:8081"
                     } finally {
-                        sh "docker rm -f sanity-test-container"
+                        sh "docker rm -f sanity-test"
                     }
                 }
             }
