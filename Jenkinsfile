@@ -31,15 +31,13 @@ pipeline {
        stage('Sanity Test') {
             steps {
                 script {
-                    echo "Running simplified Sanity Test..."
-                    sh "docker rm -f sanity-test || true"
-                    sh "docker run -d -p 8081:8080 --name sanity-test ${ECR_REGISTRY}/${REPO_NAME}:v-${BUILD_NUMBER}"
+                    sh "docker rm -f sanity-test-container || true"
+                    sh "docker run -d --name sanity-test-container ${ECR_REGISTRY}/${REPO_NAME}:v-${BUILD_NUMBER}"
                     sh "sleep 15"
                     try {
-                        echo "Checking application..."
-                        sh "curl -f http://localhost:8081"
+                        sh "docker exec sanity-test-container node -e 'require(\"http\").get(\"http://127.0.0.1:8080\", (res) => res.pipe(process.stdout))'"
                     } finally {
-                        sh "docker rm -f sanity-test"
+                        sh "docker rm -f sanity-test-container"
                     }
                 }
             }
