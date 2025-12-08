@@ -58,15 +58,15 @@ pipeline {
                     script {
                         def sshOptions = "-o StrictHostKeyChecking=no -i $SSH_KEY"
                         
-                        sh "scp ${sshOptions} docker-compose.yml ${SSH_USER}@${env.DEPLOY_SERVER_IP}:/home/${SSH_USER}/docker-compose.yaml"
+                        sh "scp ${sshOptions} docker-compose.yml ${SSH_USER}@${env.DEPLOY_SERVER_IP}:/home/${SSH_USER}/docker-compose.yml"
                         
                         sh """
                         ssh ${sshOptions} ${SSH_USER}@${env.DEPLOY_SERVER_IP} '
                             aws ecr get-login-password --region ${env.AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REGISTRY}
                             export ECR_IMAGE_FULL=${ECR_REGISTRY}/${REPO_NAME}:v-${BUILD_NUMBER}
-                            docker-compose down || true
-                            docker-compose pull
-                            docker-compose up -d
+                            sudo docker-compose down || true
+                            sudo docker-compose pull
+                            sudo docker-compose up -d
                         '
                         """
                     }
