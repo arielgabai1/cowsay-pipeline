@@ -62,7 +62,7 @@ pipeline {
                         
                         sh """
                         ssh ${sshOptions} ${SSH_USER}@${env.DEPLOY_SERVER_IP} '
-                            aws ecr get-login-password --region ${env.AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REGISTRY}
+                            aws ecr get-login-password --region ${env.AWS_REGION} | sudo docker login --username AWS --password-stdin ${ECR_REGISTRY}
                             echo "ECR_IMAGE=${ECR_REGISTRY}/${REPO_NAME}:v-${BUILD_NUMBER}" > .env
                             sudo docker-compose down || true
                             sudo docker-compose pull
