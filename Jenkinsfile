@@ -13,36 +13,64 @@ pipeline {
 
 
     environment {
-        // Define environment variables here
+        SSH_CRED_ID = 'deploy-server-key'
+        REPO_NAME = 'cowsay_pipeline'
+        ECR_REGISTRY = "${env.AWS_ACCOUNT_ID}.dkr.ecr.${env.AWS_REGION}.amazonaws.com"
     }
 
 
     stages {
-        stage("Build") {
+        stage('Build Image') {
             steps {
-                // Build steps go here
+                script {
+                    sh "docker build -t ${ECR_REGISTRY}/${REPO_NAME}:v-${BUILD_NUMBER} ."
+                }
             }
         }
 
-
-        stage("Publish") {
+        stage('Sanity Test') {
             steps {
-                // Publish steps go here
+                script {
+                    sh "docker run --rm ${ECR_REGISTRY}/${REPO_NAME}:v-${BUILD_NUMBER} /usr/games/cowsay 'Sanity Check Passed'"
+                }
             }
         }
 
-
-        stage("Deploy") {
+        stage('Push to ECR') {
             steps {
-                // Deployment steps go here
+                script {
+                    sh "aws ecr get-login-password --region ${env.AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REGISTRY}"
+                    sh "docker push ${ECR_REGISTRY}/${REPO_NAME}:v-${BUILD_NUMBER}"
+                }
+            }
+        }
+
+        stage('Deploy to EC2') {
+            steps {
+                withCredentials([sshUserPrivateKey(credentialsId: SSH_CRED_ID, keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
+                    script {
+                        def sshOptions = "-o StrictHostKeyChecking=no -i $SSH_KEY"
+                        
+                        sh "scp ${sshOptions} docker-compose.yaml ${SSH_USER}@${env.DEPLOY_SERVER_IP}:/home/${SSH_USER}/docker-compose.yaml"
+                        
+                        sh """
+                        ssh ${sshOptions} ${SSH_USER}@${env.DEPLOY_SERVER_IP} '
+                            aws ecr get-login-password --region ${env.AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REGISTRY}
+                            export ECR_IMAGE_FULL=${ECR_REGISTRY}/${REPO_NAME}:v-${BUILD_NUMBER}
+                            docker-compose down || true
+                            docker-compose pull
+                            docker-compose up -d
+                        '
+                        """
+                    }
+                }
             }
         }
     }
 
-
     post {
         always {
-            // Cleanup actions go here
+            sh "docker rmi ${ECR_REGISTRY}/${REPO_NAME}:v-${BUILD_NUMBER} || true"
         }
     }
 }
