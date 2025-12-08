@@ -1,0 +1,4 @@
+services:
+  cowsay-app:
+    image: ${ECR_IMAGE}
+    restart: always
