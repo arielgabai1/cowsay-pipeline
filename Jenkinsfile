@@ -28,10 +28,19 @@ pipeline {
             }
         }
 
-        stage('Sanity Test') {
+       stage('Sanity Test') {
             steps {
                 script {
-                    sh "docker run --rm --entrypoint='' ${ECR_REGISTRY}/${REPO_NAME}:v-${BUILD_NUMBER} /usr/games/cowsay 'Sanity Check Passed'"                }
+                    echo "Starting container for functional testing..."
+                    sh "docker run -d --name sanity-test-container ${ECR_REGISTRY}/${REPO_NAME}:v-${BUILD_NUMBER}"
+                    sh "sleep 5"
+                    try {
+                        echo "Running Curl..."
+                        sh "curl -f http://\$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' sanity-test-container):8080"
+                    } finally {
+                        sh "docker rm -f sanity-test-container"
+                    }
+                }
             }
         }
 
