@@ -2,6 +2,8 @@
 
 Declarative Jenkins pipeline for a Node.js application. Covers the full CI/CD cycle: build, test, push to AWS ECR, and deploy to EC2 via SSH. Includes email and Slack notifications.
 
+![Pipeline Architecture](pipeline.png)
+
 ---
 
 ## Pipeline Stages
