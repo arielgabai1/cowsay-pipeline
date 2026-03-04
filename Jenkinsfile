@@ -40,7 +40,7 @@ pipeline {
 
         stage('Push to ECR') {
             steps {
-                sh "aws ecr get-login-password --region ${env.AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REGISTRY}"
+                sh "aws ecr get-login-password --region ${env.AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REGISTRY} > /dev/null 2>&1"
                 sh "docker push ${IMAGE}"
             }
         }
@@ -51,7 +51,7 @@ pipeline {
                     sh "scp -o StrictHostKeyChecking=no -i \$SSH_KEY docker-compose.yml ${SSH_USER}@${env.DEPLOY_SERVER_IP}:/home/${SSH_USER}/docker-compose.yml"
                     sh """
                         ssh -o StrictHostKeyChecking=no -i \$SSH_KEY ${SSH_USER}@${env.DEPLOY_SERVER_IP} '
-                            aws ecr get-login-password --region ${env.AWS_REGION} | sudo docker login --username AWS --password-stdin ${ECR_REGISTRY}
+                            aws ecr get-login-password --region ${env.AWS_REGION} | sudo docker login --username AWS --password-stdin ${ECR_REGISTRY} > /dev/null 2>&1
                             echo "ECR_IMAGE=${IMAGE}" > .env
                             sudo docker-compose down || true
                             sudo docker-compose pull
